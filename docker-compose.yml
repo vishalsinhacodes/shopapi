@@ -1,0 +1,36 @@
+services:
+  #------------- PostgreSQL database -----------------------------------------------------
+  db:
+    image: postgres:15 # official PostgreSQL image
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: shopapi_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # persist data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  #------------- FastAPI app  ------------------------------------------------------------
+  api:
+    build: . # build from our Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:admin123@db:5432/shopapi_db
+      - SECRET_KEY=9edea867-c211-46f8-95bf-5e6d1391c883
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+    depends_on:
+      db:
+        condition: service_healthy # wait for PostgreSQL to be ready
+    volumes:
+      - ./uploads:/app/uploads # persist uploaded images
+
+  #------------- Named volume for DB data ------------------------------------------------
+volumes:
+  postgres_data:

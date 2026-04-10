@@ -1,0 +1,8 @@
+.env
+venv/
+__pycache__/
+*.pyc
+test.db
+uploads/
+*.egg-info/
+.vscode/
